@@ -5,14 +5,15 @@
         <input
           type="text"
           placeholder="Type the word here.."
-          v-model="inputWord"
+          v-model="inputWord"  
         />
-        <button @click="searchWord">Search</button>
+        <button @click="handleClick" >Search</button>
       </div>
       <div class="result">
         <div class="word">
           <h3>{{ word }}</h3>
           <button @click="playSound">
+
             <i class="fas fa-volume-up"></i>
           </button>
         </div>
@@ -22,11 +23,15 @@
         </div>
         <p class="word-meaning">{{ definition }}</p>
         <p class="word-example">{{ example || '' }}</p>
+        <p v-if="translation">Translation: {{ translation }}</p>
+      <p v-else>No translation yet.</p>
       </div>
     </div>
   </template>
   <script>
+  import axios from 'axios';
   export default {
+    
     data() {
       return {
         inputWord: '',
@@ -35,9 +40,48 @@
         phonetic: '',
         definition: '',
         example: '',
+        textToTranslate: '', // Variable para almacenar el texto ingresado
+      translation: null,
       };
     },
     methods: {
+      handleClick() {
+      this.searchWord(); // Llama a la primera función
+      this.translateText(); // Llama a la segunda función
+    },
+      async translateText() {
+      const options = {
+        method: 'POST',
+        url: 'https://microsoft-translator-text.p.rapidapi.com/translate',
+        params: {
+          'to[0]': 'es',
+          'api-version': '3.0',
+          profanityAction: 'NoAction',
+          textType: 'plain'
+        },
+        headers: {
+          'content-type': 'application/json',
+          'X-RapidAPI-Key': 'b36a79ac92msh6504e17d2821d79p18201ejsn6afb4893beec',
+          'X-RapidAPI-Host': 'microsoft-translator-text.p.rapidapi.com'
+        },
+        data: [
+          {
+            Text: this.inputWord // Usamos el texto ingresado
+          }
+        ]
+      };
+
+      try {
+        const response = await axios.request(options);
+        console.log(response.data);
+
+        // Almacena la traducción en la propiedad 'translation' del componente
+        this.translation = response.data[0].translations[0].text;
+      } catch (error) {
+        console.error(error);
+        // Puedes manejar el error de alguna manera en tu aplicación Vue
+      }
+    },
       searchWord() {
         const url = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
         fetch(`${url}${this.inputWord}`)
@@ -49,7 +93,7 @@
             this.phonetic = data[0].phonetic;
             this.definition = data[0].meanings[0].definitions[0].definition;
             this.example = data[0].meanings[0].definitions[0].example || '';
-            this.playSound(`https:${data[0].phonetics[1].audio}`);
+            this.playSound(`https:${data[0].phonetics[0].audio}`);
           })
           .catch(() => {
             this.word = "Couldn't Find The Word";
@@ -156,3 +200,5 @@ body {
     text-align: center;
 }
 </style>
+
+
