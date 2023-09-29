@@ -34,7 +34,7 @@
     </div>
 
 
-    
+
      <!-- ... div para las palabras -->
     <div class="saved-words">
     <h2>palabras guardadas</h2>
@@ -72,6 +72,8 @@ export default {
       example: '',
       textToTranslate: '', // Variable para almacenar el texto ingresado
       translation: null,
+
+      ///////////////////////////////////////////////
       savedWords: [],  //array de las palabras
       synonyms: [], // array para los sinonimos
       antonyms: [], // array para los antónimos
