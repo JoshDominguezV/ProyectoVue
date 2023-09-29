@@ -12,7 +12,7 @@
 
 
 
-       <!-- ... palabras guardadas -->
+       <!----------------------------------- ... palabras guardadas -->
       <button @click="saveWord">Save Word</button>
     </div>
     <div class="result">
@@ -35,7 +35,7 @@
 
 
 
-     <!-- ... div para las palabras -->
+     <!----------------------------- ... div para las palabras -->
     <div class="saved-words">
     <h2>palabras guardadas</h2>
     <ul>
