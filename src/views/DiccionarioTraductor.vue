@@ -9,6 +9,9 @@
         @input="searchWords"
       />
       <button @click="handleClick">Search</button>
+
+
+
        <!-- ... palabras guardadas -->
       <button @click="saveWord">Save Word</button>
     </div>
@@ -29,6 +32,9 @@
       <p v-if="translation">Translation: {{ translation }}</p>
       <p v-else>No translation yet.</p>
     </div>
+
+
+    
      <!-- ... div para las palabras -->
     <div class="saved-words">
     <h2>palabras guardadas</h2>
