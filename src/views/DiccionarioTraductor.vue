@@ -1,91 +1,55 @@
 <template>
-  <audio id="sound"></audio>
-  <div class="container">
-    <div class="search-box">
-      <input type="text" placeholder="Type the word here.." v-model="inputWord" />
-      <button @click="handleClick">Search</button>
-    </div>
-    <div class="result">
-      <div class="word">
-        <h3>{{ word }}</h3>
-        <button @click="urlSounds">
-          <i class="fas fa-volume-up"></i>
-        </button>
+    <audio id="sound"></audio>
+    <div class="container">
+      <div class="search-box">
+        <input
+          type="text"
+          placeholder="Type the word here.."
+          v-model="inputWord"  
+        />
+        <button @click="handleClick" >Search</button>
       </div>
-      <div class="details">
-        <p>{{ partOfSpeech }}</p>
-        <p>/{{ phonetic }}/</p>
+      <div class="result">
+        <div class="word">
+          <h3>{{ word }}</h3>
+          <button @click="playSound">
+
+            <i class="fas fa-volume-up"></i>
+          </button>
+        </div>
+        <div class="details">
+          <p>{{ partOfSpeech }}</p>
+          <p>/{{ phonetic }}/</p>
+        </div>
+        <p class="word-meaning">{{ definition }}</p>
+        <p class="word-example">{{ example || '' }}</p>
+        <p v-if="translation">Translation: {{ translation }}</p>
+      <p v-else>No translation yet.</p>
       </div>
-      <p class="word-meaning">{{ definition }}</p>
-      <p class="word-example">{{ example || '' }}</p>
     </div>
-    <br>
-    <hr>
-    <hr>
-    <div>
-      <label for="languageSelect">Select Language:</label>
-      <select v-model="selectedLanguage">
-        <option value="">Selecciona un idioma</option>
-        <option v-for="(language, code) in availableLanguages" :value="code">{{ language.name }}</option>
-      </select>
-      <div>
-    <button @click="playAudio"><i class="fas fa-volume-up"></i></button>
-  </div>
-    </div>
-    <p v-if="translation">Translation: {{ translation }}</p>
-    <p v-else>No translation yet.</p>
-    <p class="word-meaning">{{ definitionTranslation || definition }}</p>
-    <p class="word-example">{{ exampleTranslation || example || '' }}</p>
-  </div>
-</template>
-
-<script>
-import axios from 'axios';
-import languageData from '@/assets/data.json';
-
-export default {
-  data() {
-    return {
-      inputWord: '',
-      word: '',
-      partOfSpeech: '',
-      phonetic: '',
-      definition: '',
-      example: '',
-      textToTranslate: '', // Variable para almacenar el texto ingresado
+  </template>
+  <script>
+  import axios from 'axios';
+  export default {
+    
+    data() {
+      return {
+        inputWord: '',
+        word: '',
+        partOfSpeech: '',
+        phonetic: '',
+        definition: '',
+        example: '',
+        textToTranslate: '', // Variable para almacenar el texto ingresado
       translation: null,
-      definitionTranslation: null,
-      exampleTranslation: null,
-      availableLanguages: [], // Inicialmente nulo hasta que se carguen los idiomas
-      selectedLanguage: 'es',
-      textSound: null,
-      vocesDisponibles: [], // Lista de voces disponibles
-      indiceVoz: 0, // Índice de la voz seleccionada
-      
-    };
-  },
-  mounted() {
-    this.getAvailableLanguages();
-    this.cargarVoces();
-  },
-  methods: {
-    getAvailableLanguages() {
-      // Obtén los idiomas desde el archivo JSON
-      const languageData = require('@/assets/data.json');
-
-      // Crea una estructura de datos adecuada para el select
-      // Crea una estructura de datos adecuada para el select
-      this.availableLanguages = languageData.translation;
-
+      };
     },
-
-    handleClick() {
-      this.getAvailableLanguages();
-      this.searchWord(); // Llama a la función de búsqueda
-      this.translateText(this.selectedLanguage);
+    methods: {
+      handleClick() {
+      this.searchWord(); // Llama a la primera función
+      this.translateText(); // Llama a la segunda función
     },
-
-    async translateText(selectedLanguage) {
+      async translateText() {
       const options = {
         method: 'POST',
         url: 'https://microsoft-translator-text.p.rapidapi.com/translate',
@@ -180,72 +144,123 @@ export default {
 
 
     },
-    searchWord() {
-      const url = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
-      fetch(`${url}${this.inputWord}`)
-        .then((response) => response.json())
-        .then((data) => {
-          console.log(data);
-          this.word = this.inputWord;
-          this.partOfSpeech = data[0].meanings[0].partOfSpeech;
-          this.phonetic = data[0].phonetic;
-          this.definition = data[0].meanings[0].definitions[0].definition;
-          this.example = data[0].meanings[0].definitions[0].example || '';
-        })
-        .catch(() => {
-          this.word = "Couldn't Find The Word";
-        });
+      searchWord() {
+        const url = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
+        fetch(`${url}${this.inputWord}`)
+          .then((response) => response.json())
+          .then((data) => {
+            console.log(data);
+            this.word = this.inputWord;
+            this.partOfSpeech = data[0].meanings[0].partOfSpeech;
+            this.phonetic = data[0].phonetic;
+            this.definition = data[0].meanings[0].definitions[0].definition;
+            this.example = data[0].meanings[0].definitions[0].example || '';
+            this.playSound(`https:${data[0].phonetics[0].audio}`);
+          })
+          .catch(() => {
+            this.word = "Couldn't Find The Word";
+          });
+      },
+      playSound(audioUrl) {
+  const sound = new Audio(audioUrl);
+  sound.addEventListener('error', (error) => {
+    console.error('Error al cargar el recurso de audio:', error);
+    // Puedes mostrar un mensaje de error al usuario aquí
+  });
+
+  sound.addEventListener('canplay', () => {
+    // El audio está listo para reproducirse
+    sound.play();
+  });
+}
     },
-    urlSounds() {
-      const url = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
-      fetch(`${url}${this.inputWord}`)
-        .then((response) => response.json())
-        .then((data) => {
-          console.log('Que pasa aqui',data);
-          const audioData = data[0].phonetics;
-          console.log('aqui es', audioData)
+  };
+  </script>
+  <style>
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+*:not(i) {
+    font-family: "Poppins", sans-serif;
+}
+body {
+    background-color: #ae9cff;
+}
+.container {
+    background-color: #ffffff;
+    width: 90vmin;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    top: 50%;
+    left: 50%;
+    padding: 80px 50px;
+    border-radius: 10px;
+    box-shadow: 0 20px 40px rgba(38, 33, 61, 0.2);
+}
+.search-box {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+.search-box input {
+    padding: 5px;
+    width: 70%;
+    border: none;
+    outline: none;
+    border-bottom: 3px solid #ae9cff;
+    font-size: 16px;
+}
+.search-box button {
+    padding: 15px 0;
+    width: 25%;
+    background-color: #ae9cff;
+    border: none;
+    outline: none;
+    color: #ffffff;
+    border-radius: 5px;
+}
+.result {
+    position: relative;
+}
+.result h3 {
+    font-size: 30px;
+    color: #1f194c;
+}
+.result .word {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 80px;
+}
+.result button {
+    background-color: transparent;
+    color: #ae9cff;
+    border: none;
+    outline: none;
+    font-size: 18px;
+}
+.result .details {
+    display: flex;
+    gap: 10px;
+    color: #b3b6d4;
+    margin: 5px 0 20px 0;
+    font-size: 14px;
+}
+.word-meaning {
+    color: #575a7b;
+}
+.word-example {
+    color: #575a7b;
+    font-style: italic;
+    border-left: 5px solid #ae9cff;
+    padding-left: 20px;
+    margin-top: 30px;
+}
+.error {
+    margin-top: 80px;
+    text-align: center;
+}
+</style>
 
-          // Encuentra el primer audio no vacío
-          let audioUrl = null;
-          for (let i = 0; i < audioData.length; i++) {
-            if (audioData[i].audio) {
-              audioUrl = audioData[i].audio;
-              break; // Sal del bucle tan pronto como encuentres un audio no vacío
-            }
-          }
 
-          if (audioUrl) {
-            this.playSound(audioUrl);
-          } else {
-            console.error('No se encontraron recursos de audio disponibles.');
-          }
-        })
-        .catch((error) => {
-          console.error('Error al obtener datos:', error);
-        });
-    },
-    cargarVoces() {
-      this.vocesDisponibles = speechSynthesis.getVoices();
-      this.indiceVoz = this.vocesDisponibles.findIndex(voz => IDIOMAS_PREFERIDOS.includes(voz.lang));
-      if (this.indiceVoz === -1) this.indiceVoz = 0;
-    },
-
-    playAudio() {
-      if (!this.translation || !this.selectedLanguage) {
-        console.error('Falta texto o idioma seleccionado.');
-        return;
-      }
-      const mensaje = new SpeechSynthesisUtterance();
-      mensaje.voice = this.vocesDisponibles[this.indiceVoz];
-      mensaje.volume = 1;
-      mensaje.rate = 1;
-      mensaje.text = this.translation;
-      mensaje.pitch = 1;
-      speechSynthesis.speak(mensaje);
-    },
-
-
-  },
-};
-</script>
-<style></style>
