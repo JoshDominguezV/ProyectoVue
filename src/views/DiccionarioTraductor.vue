@@ -27,8 +27,6 @@
           <p class="word-example">{{ exampleTraslate || example || '' }}</p>
         </div>
       </div>
-    </div>
-    <div class="container">
       <!-- Output Container -->
       <div class="search-box">
         <!-- Título de la sección de traducción -->
