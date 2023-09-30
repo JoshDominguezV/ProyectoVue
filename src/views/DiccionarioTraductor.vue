@@ -152,7 +152,7 @@ export default {
         sound.play();
       });
     },
-    /////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////
     //para las palabras guardadasa
     saveWord() {
       if (this.inputWord && !this.savedWords.includes(this.inputWord)) {
