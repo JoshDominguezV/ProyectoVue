@@ -61,6 +61,8 @@
 import axios from 'axios';
 // Importar datos de idioma desde un archivo JSON
 import languageData from '@/assets/data.json';
+const IDIOMAS_PREFERIDOS = ['es-ES', 'es-US']; 
+
 
 export default {
   data() {
